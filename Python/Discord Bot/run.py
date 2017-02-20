@@ -4,11 +4,11 @@ import asyncio
 from discord.ext import commands
 import random
 
-logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler)
+#logger = logging.getLogger('discord')
+#logger.setLevel(logging.DEBUG)
+#handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+#handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+#logger.addHandler(handler)
 
 if not discord.opus.is_loaded():
     # the 'opus' library here is opus.dll on windows
@@ -152,7 +152,7 @@ class Music:
             fmt = 'An error occurred while processing this request: ```py\n{}: {}\n```'
             await self.bot.send_message(ctx.message.channel, fmt.format(type(e).__name__, e))
         else:
-            player.volume = 0.6
+            player.volume = 0.1
             entry = VoiceEntry(ctx.message, player)
             await self.bot.say('Enqueued ' + str(entry))
             await state.songs.put(entry)
@@ -164,7 +164,8 @@ class Music:
         state = self.get_voice_state(ctx.message.server)
         if state.is_playing():
             player = state.player
-            player.volume = value / 100
+            val = (100 if (value > 100) else value)
+            player.volume = val / 100
             await self.bot.say('Set the volume to {:.0%}'.format(player.volume))
 
     @commands.command(pass_context=True, no_pm=True)
@@ -220,11 +221,11 @@ class Music:
         elif voter.id not in state.skip_votes:
             state.skip_votes.add(voter.id)
             total_votes = len(state.skip_votes)
-            if total_votes >= 3:
+            if total_votes >= 2:
                 await self.bot.say('Skip vote passed, skipping song...')
                 state.skip()
             else:
-                await self.bot.say('Skip vote added, currently at [{}/3]'.format(total_votes))
+                await self.bot.say('Skip vote added, currently at [{}/2]'.format(total_votes))
         else:
             await self.bot.say('You have already voted to skip this song.')
 
@@ -237,63 +238,48 @@ class Music:
             await self.bot.say('Not playing anything.')
         else:
             skip_count = len(state.skip_votes)
-            await self.bot.say('Now playing {} [skips: {}/3]'.format(state.current, skip_count))
+            await self.bot.say('Now playing {} [skips: {}/2]'.format(state.current, skip_count))
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or('$'), description='A playlist example for discord.py')
+class Memes:
+    """Commands to satisfy all of the memes.
+    """
+    def __init__(self, bot):
+        self.bot = bot
+        self.voice_states = {}
+
+    @commands.command(pass_context=True, no_pm=True, description='Memey Java quotes')
+    async def java(self):
+        blernerQuotes=["Everytime you use instanceof, god kills a kitten","Java doesn't have numbers","Exceptions should be exceptional","We have to be careful with side-effects because some side-effects can be lethal","Even when getting daily reminders of how stupid you are, you will never realize exactly how dumb you are","I have tenure, so once a month I can kill a student","You are stupid","I'm a better programmer than you"]
+        await bot.say(random.choice(blernerQuotes))
+
+    @commands.command(pass_context=True, no_pm=True)
+    async def roll(self, dice : str):
+        """Rolls a dice in NdN format."""
+        try:
+            rolls, limit = map(int, dice.split('d'))
+        except Exception:
+            await bot.say('Format has to be in NdN!')
+            return
+
+        result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
+        await bot.say(result)
+
+    @commands.command(pass_context=True, no_pm=True, description='For when you wanna settle the score some other way')
+    async def choose(self, *choices : str):
+        """Chooses between multiple choices."""
+        await bot.say(random.choice(choices))
+
+    @commands.command(pass_context=True, no_pm=True)
+    async def joined(self, member : discord.Member):
+        """Says when a member joined."""
+        await bot.say('{0.name} joined in {0.joined_at}'.format(member))
+
+bot = commands.Bot(command_prefix=commands.when_mentioned_or('$'), description='Ben Lerner knows everything. Use him to play you music and tell you Java-related jokes')
 bot.add_cog(Music(bot))
+bot.add_cog(Memes(bot))
 
 @bot.event
 async def on_ready():
     print('Logged in as:\n{0} (ID: {0.id})'.format(bot.user))
-
-@bot.command()
-async def add(left : int, right : int):
-    """Adds two numbers together."""
-    await bot.say(left + right)
-
-@bot.command()
-async def java():
-    await bot.say('David, give me Lerner quotes for this shitty bot. He needs to be authentic')
-
-@bot.command()
-async def roll(dice : str):
-    """Rolls a dice in NdN format."""
-    try:
-        rolls, limit = map(int, dice.split('d'))
-    except Exception:
-        await bot.say('Format has to be in NdN!')
-        return
-
-    result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
-    await bot.say(result)
-
-@bot.command(description='For when you wanna settle the score some other way')
-async def choose(*choices : str):
-    """Chooses between multiple choices."""
-    await bot.say(random.choice(choices))
-
-@bot.command()
-async def repeat(times : int, content='repeating...'):
-    """Repeats a message multiple times."""
-    for i in range(times):
-        await bot.say(content)
-
-@bot.command()
-async def joined(member : discord.Member):
-    """Says when a member joined."""
-    await bot.say('{0.name} joined in {0.joined_at}'.format(member))
-
-@bot.group(pass_context=True)
-async def cool(ctx):
-    """Says if a user is cool.
-    In reality this just checks if a subcommand is being invoked.
-    """
-    if ctx.invoked_subcommand is None:
-        await bot.say('No, {0.subcommand_passed} is not cool'.format(ctx))
-
-@cool.command(name='bot')
-async def _bot():
-    """Is the bot cool?"""
-    await bot.say('Yes, the bot is cool.')
 
 bot.run('MjgzMTEwMDY5ODU0NDA0NjA4.C4w9tw.nN_83FziXVBVFAmqOTBJxMqYrE4')
