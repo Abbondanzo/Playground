@@ -250,7 +250,7 @@ class Memes:
     @commands.command(pass_context=True, no_pm=True, description='Memey Java quotes')
     async def java(self):
         """Memey java quotes."""
-        blernerQuotes=["Everytime you use instanceof, god kills a kitten","Java doesn't have numbers","Exceptions should be exceptional","We have to be careful with side-effects because some side-effects can be lethal","Even when getting daily reminders of how stupid you are, you will never realize exactly how dumb you are","I have tenure, so once a month I can kill a student","You are stupid","I'm a better programmer than you"]
+        blernerQuotes=["Everytime you use instanceof, god kills a kitten","Java doesn't have numbers","Exceptions should be exceptional","We have to be careful with side-effects because some side-effects can be lethal","Even when getting daily reminders of how stupid you are, you will never realize exactly how dumb you are","I have tenure, so once a month I can kill a student","You are stupid","That's bullshit","In this case, Java counts as sane","That looks remarkably like a conspiracy theorist's diagram—they're not always wrong","I'm a better programmer than you"]
         await bot.say(random.choice(blernerQuotes))
 
     @commands.command(pass_context=True, no_pm=True)
