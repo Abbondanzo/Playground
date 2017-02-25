@@ -152,7 +152,7 @@ class Music:
             fmt = 'An error occurred while processing this request: ```py\n{}: {}\n```'
             await self.bot.send_message(ctx.message.channel, fmt.format(type(e).__name__, e))
         else:
-            player.volume = 0.1
+            player.volume = 1.0
             entry = VoiceEntry(ctx.message, player)
             await self.bot.say('Enqueued ' + str(entry))
             await state.songs.put(entry)
@@ -164,7 +164,8 @@ class Music:
         state = self.get_voice_state(ctx.message.server)
         if state.is_playing():
             player = state.player
-            val = (100 if (value > 100) else value)
+            # val = (100 if (value > 100) else value)
+            val = 100
             player.volume = val / 100
             await self.bot.say('Set the volume to {:.0%}'.format(player.volume))
 
